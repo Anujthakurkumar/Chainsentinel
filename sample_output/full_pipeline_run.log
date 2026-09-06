@@ -1,0 +1,290 @@
+Starting full pipeline run...
+
+======================================================================
+Day 3  - Dataset generation  (generate_dataset.py)
+======================================================================
+GeoIP backend: REAL GeoLite2
+GeoIP resolution: 44 real (88.0%), 6 fallback (12.0%)
+Geo-exception (distant peer) transactions: 150 (14.9%)
+Hard-negative pass-through transactions: 56 across 14 chains (labeled normal)
+
+Total transactions: 1007
+pattern_type
+normal      856
+peeling     113
+fanin        29
+coinjoin      5
+fanout        4
+Name: count, dtype: int64
+
+Wrote: btc_dataset.json, btc_dataset.csv
+
+--- Stage completed in 10.4s ---
+
+======================================================================
+Day 4  - Graph construction  (graph_builder.py)
+======================================================================
+Total nodes: 2022
+  ip: 50
+  tx: 1007
+  wallet: 965
+Total edges: 4995
+  observed_relayed_by: 1007
+  observed_relayed_to: 1007
+  pays_to: 1660
+  spends_in: 1321
+
+Weakly connected components: 1
+Largest component sizes (top 5): [2022]
+
+Non-normal tx nodes tagged in graph: 151
+
+Saved full graph (wallet+tx+ip) to btc_graph.gpickle
+
+Wallet-only projection: 1972 nodes, 2981 edges
+Weakly connected components (wallet+tx only): 1
+Largest component sizes (top 5): [1972]
+Saved wallet-only projection to btc_graph_wallet_only.gpickle
+
+--- Stage completed in 0.7s ---
+
+======================================================================
+Day 5  - CIOH + change-address clustering  (change_address_heuristic.py)
+======================================================================
+=== Baseline: CIOH only ===
+Predicted clusters: 720 (true entities: 65)
+Precision: 0.519  Recall: 0.060  F1: 0.108
+ARI: 0.105  NMI: 0.768
+
+=== Combined: CIOH + change-address heuristic ===
+Predicted clusters: 370 (true entities: 65)
+Precision: 0.288  Recall: 0.284  F1: 0.286
+ARI: 0.274  NMI: 0.795
+
+=== Change-address heuristic's own accuracy (vs is_change_ground_truth) ===
+Confident predictions made: 399 (out of 554 real change cases in 2-output txs)
+Precision (of confident guesses): 0.937
+Recall (of all real change cases): 0.675
+
+=== Recall improvement from adding the change-address pass ===
+CIOH-only recall:        0.060
+CIOH + change recall:    0.284
+Absolute improvement:    +0.224 (370.9% relative increase)
+
+Precision change: 0.519 -> 0.288 (worth checking this didn't drop much in exchange for the recall gain)
+
+=== CoinJoin impact (unchanged by this pass, as expected -- it only affects 2-output txs) ===
+CoinJoin false-merge rate: 100.0% (44/44)
+
+Saved predicted_entity_id_v2.pkl
+
+--- Stage completed in 2.2s ---
+
+======================================================================
+Day 6  - Wallet feature engineering  (wallet_features.py)
+======================================================================
+Computed features for 965 wallets
+Wallets touching an illicit pattern: 277 (28.7%)
+
+=== Feature summary: normal wallets ===
+      avg_amount_zscore  max_abs_amount_zscore   tx_count  tx_frequency_per_day  fan_in_degree  fan_out_degree  max_geo_velocity_kmh  avg_geo_velocity_kmh  time_of_day_entropy
+mean          -0.287298               0.577288   2.843023             15.842071       1.664244        1.236919           3630.615234           1365.920131             1.095167
+std            0.405478               0.419538   2.107395            190.593958       1.047240        1.310790          17466.165322           5335.188547             0.836056
+max            3.003496               3.835903  22.000000           4800.000000      12.000000       11.000000         336784.473578          71635.754745             3.642490
+
+=== Feature summary: wallets touched by an illicit pattern ===
+      avg_amount_zscore  max_abs_amount_zscore   tx_count  tx_frequency_per_day  fan_in_degree  fan_out_degree  max_geo_velocity_kmh  avg_geo_velocity_kmh  time_of_day_entropy
+mean           0.810893               1.493067   3.480144            427.638034       1.859206        1.696751          8.776598e+04          6.551854e+04             1.029712
+std            1.226701               1.571732   2.710113           1016.933171       1.309814        1.851876          2.141154e+05          1.699543e+05             1.003132
+max            5.562868              13.265288  15.000000           6646.153846       8.000000        9.000000          1.556100e+06          1.445850e+06             3.323231
+
+Saved wallet_features.csv
+
+--- Stage completed in 0.6s ---
+
+======================================================================
+Day 7  - Isolation Forest anomaly detection  (anomaly_detection.py)
+======================================================================
+=== Overall ranking quality (threshold-independent) ===
+AUC-PR (average precision): 0.636
+AUC-ROC:                    0.793
+Baseline (random) AUC-PR would be ~0.287 (the base illicit rate)
+
+=== Precision/Recall at 'review top-K% most anomalous' operating points ===
+Top 10%  (96 wallets flagged): precision=0.792  recall=0.274  (76 true positives caught)
+Top 20%  (193 wallets flagged): precision=0.694  recall=0.484  (134 true positives caught)
+Top 30%  (290 wallets flagged): precision=0.603  recall=0.632  (175 true positives caught)
+
+=== Recall by pattern type (does this feature set see peeling/fanout as well as CoinJoin?) ===
+coinjoin   (n= 45): top10%=0.09, top20%=0.16, top30%=0.38
+fanin      (n= 46): top10%=0.26, top20%=0.39, top30%=0.61
+fanout     (n= 32): top10%=0.34, top20%=0.50, top30%=0.69
+peeling    (n=190): top10%=0.33, top20%=0.59, top30%=0.71
+
+Saved wallet_anomaly_scores.csv
+
+--- Stage completed in 1.6s ---
+
+======================================================================
+Day 8  - Peeling/CoinJoin graph-traversal detection  (peeling_chain_detection.py)
+======================================================================
+=== Peeling Chain Detection ===
+True peeling chains in dataset: 18
+Candidate chains detected: 36
+True chains successfully found (recall):     100.0% (18/18)
+Detected chains that were real (precision):   52.8% (19/36)
+False-positive candidate chains (coincidental normal-traffic look-alikes): 17
+
+=== CoinJoin-like Detection ===
+True CoinJoin transactions in dataset: 5
+Flagged as CoinJoin-like: 5
+Precision: 100.0%  Recall: 100.0%
+
+Saved detected_peeling_chains.pkl
+
+--- Stage completed in 0.3s ---
+
+======================================================================
+Day 9  - Peeling-chain classifier  (peeling_chain_classifier.py)
+======================================================================
+Candidate chains: 36  (true peeling: 19, false-positive look-alikes: 17)
+
+HONEST CAVEAT: only 19 true positive examples exist in this dataset.
+Using Leave-One-Out CV below because a real train/test split isn't meaningful at this sample size.
+
+=== Leave-One-Out cross-validated performance ===
+Precision: 0.950  Recall: 1.000  F1: 0.974
+Confusion matrix [[TN, FP], [FN, TP]]:
+[[16  1]
+ [ 0 19]]
+
+=== Held-out train/test split (25 train / 11 test, model never saw test set) ===
+Precision: 0.750  Recall: 1.000  F1: 0.857
+Confusion matrix [[TN, FP], [FN, TP]]:
+[[3 2]
+ [0 6]]
+This is stronger evidence of real generalization than LOO alone.
+
+=== Feature importances (explainability) ===
+  min_time_gap_sec    : 0.326
+  mean_time_gap_sec   : 0.221
+  max_time_gap_sec    : 0.158
+  hop_count           : 0.095
+  std_time_gap_sec    : 0.060
+  std_ratio           : 0.040
+  decline_fraction    : 0.038
+  mean_ratio          : 0.035
+  log_start_amount    : 0.022
+  mean_fee_fraction   : 0.005
+
+Saved peeling_classifier.pkl
+
+--- Stage completed in 4.3s ---
+
+======================================================================
+Day 10 - Risk propagation + combined scoring  (risk_propagation.py)
+======================================================================
+y to known cash-out wallets (propagated risk 0.96); participation in a high-confidence peeling chain (probability 1.00).
+bc1qvfua9bq1btr23qiu...  risk=1.000 (evidence_sum=2.13) [SEED]
+    Flagged for: network proximity to known cash-out wallets (propagated risk 0.96); participation in a high-confidence peeling chain (probability 1.00).
+bc1qcxotx76d2kjrzcv3...  risk=1.000 (evidence_sum=2.03) [SEED]
+    Flagged for: network proximity to known cash-out wallets (propagated risk 0.96); participation in a high-confidence peeling chain (probability 1.00).
+bc1qn2twdl9zs13c9xqy...  risk=1.000 (evidence_sum=2.02)
+    Flagged for: statistically anomalous behavior (anomaly score 1.00); participation in a high-confidence peeling chain (probability 1.00).
+bc1qdygfliji18k0axyc...  risk=1.000 (evidence_sum=1.83)
+    Flagged for: statistically anomalous behavior (anomaly score 0.83); participation in a high-confidence peeling chain (probability 1.00).
+bc1qugnekrcpprcjiwvh...  risk=1.000 (evidence_sum=1.79)
+    Flagged for: statistically anomalous behavior (anomaly score 0.79); participation in a high-confidence peeling chain (probability 1.00).
+bc1q5259gmq2p014x5dl...  risk=1.000 (evidence_sum=1.77)
+    Flagged for: statistically anomalous behavior (anomaly score 0.77); participation in a high-confidence peeling chain (probability 1.00).
+bc1q3fpoyipk0qtl3q4n...  risk=1.000 (evidence_sum=1.77)
+    Flagged for: statistically anomalous behavior (anomaly score 0.76); participation in a high-confidence peeling chain (probability 1.00).
+bc1qa4fejgxaa2ilgb0s...  risk=1.000 (evidence_sum=1.75)
+    Flagged for: statistically anomalous behavior (anomaly score 0.75); participation in a high-confidence peeling chain (probability 1.00).
+
+=== AUC-PR comparison: combined vs. each signal alone ===
+Propagated risk only     : AUC-PR = 0.362
+Anomaly score only       : AUC-PR = 0.636
+Peeling score only       : AUC-PR = 0.782
+COMBINED (noisy-OR)      : AUC-PR = 0.868
+
+Saved wallet_final_risk_scores.csv
+
+--- Stage completed in 1.5s ---
+
+======================================================================
+Day 11 - SHAP explainability  (explainability.py)
+======================================================================
+chain length (contributed +0.044); how much the balance declined end-to-end (contributed +0.024); the size of the starting balance (contributed +0.002).
+Chain 0: P(peeling)=0.040  true_label=0
+    Driven by: chain length (contributed +0.012); how much the balance declined end-to-end (contributed +0.008); the fee pattern across hops (contributed +0.002).
+Chain 2: P(peeling)=0.040  true_label=0
+    No individual feature stood out; flagged only by combined weak signals.
+Chain 11: P(peeling)=0.040  true_label=0
+    Driven by: variability in time between hops (contributed +0.002).
+Chain 23: P(peeling)=0.040  true_label=0
+    Driven by: variability in the peel-to-remainder ratio (contributed +0.008).
+Chain 18: P(peeling)=0.030  true_label=0
+    Driven by: the size of the starting balance (contributed +0.012).
+Chain 3: P(peeling)=0.010  true_label=0
+    Driven by: the consistency of the peel-to-remainder ratio (contributed +0.013).
+Chain 10: P(peeling)=0.010  true_label=0
+    Driven by: variability in the peel-to-remainder ratio (contributed +0.008).
+Chain 25: P(peeling)=0.010  true_label=0
+    No individual feature stood out; flagged only by combined weak signals.
+Chain 9: P(peeling)=0.010  true_label=0
+    No individual feature stood out; flagged only by combined weak signals.
+Chain 7: P(peeling)=0.000  true_label=0
+    Driven by: the consistency of the peel-to-remainder ratio (contributed +0.013); variability in the peel-to-remainder ratio (contributed +0.006).
+Chain 19: P(peeling)=0.000  true_label=0
+    Driven by: the consistency of the peel-to-remainder ratio (contributed +0.003).
+Chain 8: P(peeling)=0.000  true_label=0
+    No individual feature stood out; flagged only by combined weak signals.
+Chain 20: P(peeling)=0.000  true_label=0
+    Driven by: variability in the peel-to-remainder ratio (contributed +0.005).
+Chain 22: P(peeling)=0.000  true_label=0
+    Driven by: variability in the peel-to-remainder ratio (contributed +0.005).
+
+Saved chain_shap_explanations.csv
+
+--- Stage completed in 12.7s ---
+
+======================================================================
+Day 11 - Final explained alert list  (final_alerts.py)
+======================================================================
+.074).
+
+bc1qdygfliji18k0axycelos...  final_risk=1.000
+   [Anomaly] Driven by: an unusually high transaction frequency (contributed +0.089). [Peeling-chain, P=1.00] Driven by: how tightly-timed the fastest hop was (contributed +0.173); the average time between hops (contributed +0.122); how tightly-timed the slowest hop was (contributed +0.084).
+
+bc1qugnekrcpprcjiwvhdk8l...  final_risk=1.000
+   [Anomaly] Driven by: an unusually high transaction frequency (contributed +0.107); unusually large average transaction amount (contributed +0.090). [Peeling-chain, P=1.00] Driven by: how tightly-timed the fastest hop was (contributed +0.169); the average time between hops (contributed +0.114); how tightly-timed the slowest hop was (contributed +0.078).
+
+bc1q5259gmq2p014x5dlwy1p...  final_risk=1.000
+   [Anomaly] Driven by: an unusually high number of incoming payments (contributed +0.162); an atypical number of transactions (contributed +0.081); an unusually high number of outgoing payments (contributed +0.058). [Peeling-chain, P=1.00] Driven by: how tightly-timed the fastest hop was (contributed +0.169); the average time between hops (contributed +0.106); how tightly-timed the slowest hop was (contributed +0.077).
+
+bc1q3fpoyipk0qtl3q4n89qk...  final_risk=1.000
+   [Anomaly] Driven by: an unusually high transaction frequency (contributed +0.076). [Peeling-chain, P=1.00] Driven by: how tightly-timed the fastest hop was (contributed +0.176); the average time between hops (contributed +0.123); how tightly-timed the slowest hop was (contributed +0.081).
+
+bc1qa4fejgxaa2ilgb0s0r2s...  final_risk=1.000
+   [Anomaly] Driven by: an unusually high transaction frequency (contributed +0.110); physically implausible peer geo-velocity (contributed +0.006). [Peeling-chain, P=1.00] Driven by: how tightly-timed the fastest hop was (contributed +0.169); the average time between hops (contributed +0.120); how tightly-timed the slowest hop was (contributed +0.077).
+
+Saved final_alerts_explained.csv
+
+--- Stage completed in 4.1s ---
+
+======================================================================
+PIPELINE COMPLETE -- all 10 stages passed in 38.4s
+======================================================================
+  [OK] Day 3  - Dataset generation  (10.4s)
+  [OK] Day 4  - Graph construction  (0.7s)
+  [OK] Day 5  - CIOH + change-address clustering  (2.2s)
+  [OK] Day 6  - Wallet feature engineering  (0.6s)
+  [OK] Day 7  - Isolation Forest anomaly detection  (1.6s)
+  [OK] Day 8  - Peeling/CoinJoin graph-traversal detection  (0.3s)
+  [OK] Day 9  - Peeling-chain classifier  (4.3s)
+  [OK] Day 10 - Risk propagation + combined scoring  (1.5s)
+  [OK] Day 11 - SHAP explainability  (12.7s)
+  [OK] Day 11 - Final explained alert list  (4.1s)
+
+Dashboard: run 'streamlit run app.py' separately (needs a browser/tunnel, not part of this batch run).

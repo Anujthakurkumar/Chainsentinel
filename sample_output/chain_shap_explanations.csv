@@ -1,0 +1,37 @@
+chain_index,hop_count,true_label,predicted_probability,shap_reason
+1,7,1,1.0,Driven by: how tightly-timed the fastest hop was (contributed +0.169); the average time between hops (contributed +0.120); how tightly-timed the slowest hop was (contributed +0.077).
+12,4,1,1.0,Driven by: how tightly-timed the fastest hop was (contributed +0.173); the average time between hops (contributed +0.122); how tightly-timed the slowest hop was (contributed +0.084).
+16,9,1,1.0,Driven by: how tightly-timed the fastest hop was (contributed +0.169); the average time between hops (contributed +0.106); how tightly-timed the slowest hop was (contributed +0.077).
+14,5,1,1.0,Driven by: how tightly-timed the fastest hop was (contributed +0.168); the average time between hops (contributed +0.126); how tightly-timed the slowest hop was (contributed +0.081).
+34,10,1,1.0,Driven by: how tightly-timed the fastest hop was (contributed +0.169); the average time between hops (contributed +0.114); how tightly-timed the slowest hop was (contributed +0.078).
+31,10,1,1.0,Driven by: how tightly-timed the fastest hop was (contributed +0.169); the average time between hops (contributed +0.111); how tightly-timed the slowest hop was (contributed +0.077).
+24,9,1,1.0,Driven by: how tightly-timed the fastest hop was (contributed +0.169); the average time between hops (contributed +0.111); how tightly-timed the slowest hop was (contributed +0.077).
+33,9,1,1.0,Driven by: how tightly-timed the fastest hop was (contributed +0.169); the average time between hops (contributed +0.111); how tightly-timed the slowest hop was (contributed +0.074).
+28,5,1,1.0,Driven by: how tightly-timed the fastest hop was (contributed +0.168); the average time between hops (contributed +0.118); how tightly-timed the slowest hop was (contributed +0.081).
+27,4,1,1.0,Driven by: how tightly-timed the fastest hop was (contributed +0.176); the average time between hops (contributed +0.123); how tightly-timed the slowest hop was (contributed +0.081).
+21,8,1,1.0,Driven by: how tightly-timed the fastest hop was (contributed +0.169); the average time between hops (contributed +0.123); how tightly-timed the slowest hop was (contributed +0.078).
+35,4,1,0.99,Driven by: how tightly-timed the fastest hop was (contributed +0.176); the average time between hops (contributed +0.126); how tightly-timed the slowest hop was (contributed +0.085).
+13,4,1,0.9833333333333334,Driven by: how tightly-timed the fastest hop was (contributed +0.169); the average time between hops (contributed +0.132); how tightly-timed the slowest hop was (contributed +0.085).
+26,6,1,0.97,Driven by: how tightly-timed the fastest hop was (contributed +0.179); the average time between hops (contributed +0.115); chain length (contributed +0.049).
+29,3,1,0.95,Driven by: how tightly-timed the fastest hop was (contributed +0.175); the average time between hops (contributed +0.138); how tightly-timed the slowest hop was (contributed +0.085).
+30,7,1,0.9233333333333335,Driven by: how tightly-timed the fastest hop was (contributed +0.181); the average time between hops (contributed +0.089); chain length (contributed +0.066).
+32,3,1,0.9083333333333334,Driven by: how tightly-timed the fastest hop was (contributed +0.172); the average time between hops (contributed +0.136); how tightly-timed the slowest hop was (contributed +0.085).
+5,6,1,0.9059999999999999,Driven by: how tightly-timed the fastest hop was (contributed +0.223); variability in time between hops (contributed +0.079); chain length (contributed +0.056).
+15,5,1,0.826,Driven by: how tightly-timed the fastest hop was (contributed +0.216); variability in time between hops (contributed +0.079); chain length (contributed +0.041).
+6,2,0,0.28,Driven by: how tightly-timed the slowest hop was (contributed +0.023); variability in the peel-to-remainder ratio (contributed +0.008).
+4,4,0,0.10933333333333334,Driven by: the consistency of the peel-to-remainder ratio (contributed +0.013); the size of the starting balance (contributed +0.011); chain length (contributed +0.011).
+17,6,0,0.09,Driven by: chain length (contributed +0.044); how much the balance declined end-to-end (contributed +0.024); the size of the starting balance (contributed +0.002).
+0,4,0,0.04,Driven by: chain length (contributed +0.012); how much the balance declined end-to-end (contributed +0.008); the fee pattern across hops (contributed +0.002).
+2,2,0,0.04,No individual feature stood out; flagged only by combined weak signals.
+11,3,0,0.04,Driven by: variability in time between hops (contributed +0.002).
+23,2,0,0.04,Driven by: variability in the peel-to-remainder ratio (contributed +0.008).
+18,2,0,0.03,Driven by: the size of the starting balance (contributed +0.012).
+3,2,0,0.01,Driven by: the consistency of the peel-to-remainder ratio (contributed +0.013).
+10,2,0,0.01,Driven by: variability in the peel-to-remainder ratio (contributed +0.008).
+25,2,0,0.01,No individual feature stood out; flagged only by combined weak signals.
+9,3,0,0.01,No individual feature stood out; flagged only by combined weak signals.
+7,2,0,0.0,Driven by: the consistency of the peel-to-remainder ratio (contributed +0.013); variability in the peel-to-remainder ratio (contributed +0.006).
+19,3,0,0.0,Driven by: the consistency of the peel-to-remainder ratio (contributed +0.003).
+8,2,0,0.0,No individual feature stood out; flagged only by combined weak signals.
+20,2,0,0.0,Driven by: variability in the peel-to-remainder ratio (contributed +0.005).
+22,2,0,0.0,Driven by: variability in the peel-to-remainder ratio (contributed +0.005).
