@@ -2,13 +2,18 @@
 
 ### AI-Powered Monitoring & Analysis of Bitcoin Transaction Traffic
 
-Offline prototype for SIH Problem Statement 5 (National Technical Research
-Organisation) — ingests Bitcoin-shaped transaction + network metadata,
-builds a wallet/transaction/IP graph, applies four independent detection
-methods (entity clustering, anomaly detection, peeling-chain/mixing
-detection, risk propagation), and combines them into a single ranked,
-explainable, evidence-backed risk score per wallet — viewable in an
-interactive dashboard.
+A personal project exploring offline, AI-assisted blockchain forensics —
+ingests Bitcoin-shaped transaction + network metadata, builds a
+wallet/transaction/IP graph, applies four independent detection methods
+(entity clustering, anomaly detection, peeling-chain/mixing detection, risk
+propagation), and combines them into a single ranked, explainable,
+evidence-backed risk score per wallet — viewable in an interactive
+dashboard.
+
+Built as a hands-on way to learn practical blockchain forensics techniques
+(the same core heuristics real tools like Chainalysis and Elliptic use),
+graph-based anomaly detection, and explainable AI — end to end, from
+synthetic data generation through a working dashboard.
 
 See `TECHNICAL_WRITEUP.md` for approach, model choices, evaluation results,
 and known limitations.
